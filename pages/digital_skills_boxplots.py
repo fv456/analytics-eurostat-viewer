@@ -6,61 +6,12 @@ import streamlit as st
 
 import pandas as pd
 import pickle
-import io
 import plotly.express as px
 import plotly.graph_objects as go
 
+import dtd_streamlit_utils as utils
+
 # %% Streamlit app
-
-# REF (8/4/22): https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Glossary:Country_codes
-COUNTRIES = {
-    # "EU27_2020" : "European Average",
-    # European Union (27 countries)
-    "AT": "Austria",
-    "BE": "Belgium",
-    "BG": "Bulgaria",
-    "HR": "Croatia",
-    "CY": "Cyprus",
-    "CZ": "Czechia",
-    "DK": "Denmark",
-    "EE": "Estonia",
-    "FI": "Finland",
-    "FR": "France",
-    "DE": "Germany",
-    "EL": "Greece",
-    "HU": "Hungary",
-    "IE": "Ireland",
-    "IT": "Italy",  ###
-    "LV": "Latvia",
-    "LT": "Lithuania",
-    "LU": "Luxembourg",
-    "MT": "Malta",
-    "NL": "Netherlands",
-    "PL": "Poland",
-    "RO": "Portugal",
-    "RO": "Romania",
-    "SK": "Slovakia",
-    "SI": "Slovenia",
-    "ES": "Spain",
-    "SE": "Sweden",
-    # # Candidate countries - DSK are available as well
-    # "ME" : "Montenegro (EU candidate)",
-    # "MK" : "North Macedonia (EU candidate)",
-    # "AL" : "Albania (EU candidate)",
-    # "RS" : "Serbia (EU candidate)",
-    # "TR" : "Turkey (EU candidate)",
-    # # Other
-    # "UK" : "United Kingdom"
-}
-
-
-def st_create_download_btn(fig, btn_txt, html_name):
-    buffer = io.StringIO()
-    fig.write_html(buffer, include_plotlyjs="cdn")
-    html_bytes = buffer.getvalue().encode()
-    st.download_button(
-        label=btn_txt, data=html_bytes, file_name=html_name, mime="text/html"
-    )
 
 
 def create_boxplot(df_all, variable_name: str) -> go.Figure:
@@ -124,15 +75,20 @@ def create_boxplot(df_all, variable_name: str) -> go.Figure:
 
 @st.cache
 def get_eurostat_data():
+
+    COUNTRIES = utils.get_eu_countries()
+
     # Database version 2022-3-25, preprocessing version 2022-4-20
     with open("data/eurostat_DSK_v220420.pickle", "rb") as f:
         df = pickle.load(f)
+
     df["VALUE"] = df["VALUE"] * 100.0
     df["VAR_AND_BRK"] = df["VARIABLE"] + "-" + df["BREAKDOWN_TYPE"]
     df["CAPTION_ALL"] = df["VARIABLE_CAPTION"] + " - " + df["BREAKDOWN_CAPTION"]
-    df = df[
-        df.GEO.isin(COUNTRIES)
-    ]  # Mantengo solo i Paesi oggetto di analisi (rimuove anche aggregazioni come EU15, ecc..)
+
+    # Mantengo solo i Paesi oggetto di analisi (rimuove anche aggregazioni come EU15, ecc..)
+    df = df[df.GEO.isin(COUNTRIES)]
+
     df["GEO_CAPTION"] = [COUNTRIES[g] for g in df.GEO]
     return df
 
@@ -158,7 +114,7 @@ def app():
     #     COUNTRIES,
     #     format_func=lambda id: COUNTRIES[id]
     # )
-    countries = COUNTRIES
+    countries = utils.get_eu_countries()
     df_all = df_all[df_all.GEO.isin(countries)]
 
     # Base per le variabili: tutte le disponibili nel dataset
@@ -232,13 +188,15 @@ def app():
         else:
             SEL_BRKS = SEL_BRKS + list(
                 ALL_BRKS[
-                    (ALL_BRKS.str.contains("^Y\d+_\d+$"))
+                    (ALL_BRKS.str.contains("^Y\\d+_\\d+$"))
                     | (ALL_BRKS.str.contains("MAX$"))
                 ].values
             )
 
     if st.sidebar.checkbox("Edu", False):
-        SEL_BRKS = SEL_BRKS + list(ALL_BRKS[ALL_BRKS.str.contains("^I\d+_\d+$")].values)
+        SEL_BRKS = SEL_BRKS + list(
+            ALL_BRKS[ALL_BRKS.str.contains("^I\\d+_\\d+$")].values
+        )
     if st.sidebar.checkbox("Age & Edu", False):
         SEL_BRKS = SEL_BRKS + list(ALL_BRKS[ALL_BRKS.str.contains("HI$")].values)
         SEL_BRKS = SEL_BRKS + list(ALL_BRKS[ALL_BRKS.str.contains("ME$")].values)
@@ -329,13 +287,15 @@ def app():
             fig = fig.update_xaxes(
                 categoryorder="array", categoryarray=sorted(SEL_BRKS)
             )
-            st_create_download_btn(fig, "Download chart below", f"boxplot_{var}.html")
+            utils.st_create_download_btn(
+                fig, "Download chart below", f"boxplot_{var}.html"
+            )
             st.plotly_chart(fig, use_container_width=True)
 
         except:
             print(f"Problems with variable {var}")
 
-    print("Eurostat DSK navigation page loaded.")
+    print("Eurostat DSK boxplots navigation page loaded.")
 
 
 # %% Exec with file

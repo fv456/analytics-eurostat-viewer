@@ -67,3 +67,12 @@ def st_create_download_btn(fig, btn_txt, html_name):
     st.download_button(
         label=btn_txt, data=html_bytes, file_name=html_name, mime="text/html"
     )
+
+
+def st_create_download_btn_2(parent, fig, btn_txt, html_name):
+    with io.StringIO() as buffer:
+        fig.write_html(buffer, include_plotlyjs="cdn")
+        html_bytes = buffer.getvalue().encode()
+        parent.download_button(
+            label=btn_txt, data=html_bytes, file_name=html_name, mime="text/html"
+        )

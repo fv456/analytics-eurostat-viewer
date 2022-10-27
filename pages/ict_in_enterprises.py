@@ -6,59 +6,11 @@ import logging
 import streamlit as st
 import numpy as np
 import pandas as pd
-import io
-
 import plotly.express as px
 
+import dtd_streamlit_utils as utils
+
 # %% Streamlit app
-
-# REF (8/4/22): https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Glossary:Country_codes
-EU_COUNTRIES = {
-    "EU27_2020": "European Average",
-    # Union (27 countries)
-    "AT": "Austria",
-    "BE": "Belgium",
-    "BG": "Bulgaria",
-    "HR": "Croatia",
-    "CY": "Cyprus",
-    "CZ": "Czechia",
-    "DK": "Denmark",
-    "EE": "Estonia",
-    "FI": "Finland",
-    "FR": "France",
-    "DE": "Germany",
-    "EL": "Greece",
-    "HU": "Hungary",
-    "IE": "Ireland",
-    # "IT" : "Italy",
-    "LV": "Latvia",
-    "LT": "Lithuania",
-    "LU": "Luxembourg",
-    "MT": "Malta",
-    "NL": "Netherlands",
-    "PL": "Poland",
-    "RO": "Portugal",
-    "RO": "Romania",
-    "SK": "Slovakia",
-    "SI": "Slovenia",
-    "ES": "Spain",
-    "SE": "Sweden",
-    # Candidate countries - DSK are available as well
-    # "ME" : "Montenegro (EU candidate)",
-    # "MK" : "North Macedonia (EU candidate)",
-    # "AL" : "Albania (EU candidate)",
-    # "RS" : "Serbia (EU candidate)",
-    # "TR" : "Turkey (EU candidate)"
-}
-
-
-def st_create_download_btn(parent, fig, btn_txt, html_name):
-    with io.StringIO() as buffer:
-        fig.write_html(buffer, include_plotlyjs="cdn")
-        html_bytes = buffer.getvalue().encode()
-        parent.download_button(
-            label=btn_txt, data=html_bytes, file_name=html_name, mime="text/html"
-        )
 
 
 @st.cache
@@ -120,6 +72,10 @@ def app():
     logging.info("Sidebar loading...")
     year = st.sidebar.selectbox("Year?", [2021, 2020], index=0)
 
+    EU_COUNTRIES = {"EU27_2020": "European Average",} | utils.get_eu_countries(
+        eu_union=True, eu_candidates=False, eu_other=False
+    )  # , drop_italy=True)
+
     country = st.sidebar.selectbox(
         "Compare Italy with..?",
         EU_COUNTRIES,  # view.EU_27_AND_AVG # df.GEO.unique()[37]
@@ -140,7 +96,7 @@ def app():
 
     COLNAME = f"DELTA_{country}"
     logging.info("Data loading...")
-    df_deltas = get_countries_delta_data(country, year, COLNAME)
+    df_deltas = get_countries_delta_data(str(country), int(str(year)), COLNAME)
     logging.info("...data loaded.")
 
     # Filtraggi sulle soglie dei valori di confronto
@@ -284,7 +240,7 @@ def app():
         if dwnld_button.button(
             "Prepare download filtered treemap VAR->BRK above (HTML file)"
         ):
-            st_create_download_btn(
+            utils.st_create_download_btn_2(
                 dwnld_button, fig, "Download", "eurostat_ent_var_brk_treemap.html"
             )
     else:
@@ -310,7 +266,7 @@ def app():
         if dwnld_button.button(
             "Prepare download filtered treemap BRK->VAR above (HTML file)"
         ):
-            st_create_download_btn(
+            utils.st_create_download_btn_2(
                 dwnld_button, fig, "Download", "eurostat_ent_brk_var_treemap.html"
             )
     logging.info("...treemap computed.")
