@@ -23,8 +23,10 @@ Lo script di preprocessing non è al momento incluso nel repository.
 ## Da completare:
 - Aggiunta degli script di preprocessing che permettano di ottenere i dataset di cui fa uso la web app
 
-
-
+# Data source
+Data comes from:
+    - [Structural Businness Statistics](https://ec.europa.eu/eurostat/web/structural-business-statistics/data/database)
+    - [Digital Economic and Society - Comprehensive database](https://ec.europa.eu/eurostat/web/digital-economy-and-society/data/comprehensive-database)
 
 ## Licenza:
 
