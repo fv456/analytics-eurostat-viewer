@@ -2,7 +2,6 @@
 """
 @author: fv456
 """
-import numpy as np
 import pandas as pd
 import streamlit as st
 import plotly.express as px
@@ -28,18 +27,15 @@ def get_countries_delta_data(
 
     df_ita_YY = df.query(f"YEAR=={year} and GEO=='IT'")[["VAR_AND_BRK", "VALUE"]]
     df_ita_YY.columns = ["VAR_AND_BRK", "VAL_IT"]
-    # df_ita_YY = df_ita_YY.set_index("VAR_AND_BRK")
 
     # Utilizziamo come base per la differenza le combinazioni var/brk disponibili per
     # l'Italia nell'anno selezionato
     df_deltas = df_ita_YY[["VAR_AND_BRK"]].copy(deep=True)
-    # df_deltas = df_deltas.set_index("VAR_AND_BRK")
 
     df_country_YY = df.query(f"YEAR=={year_b} and GEO=='{country_B}'")[
         ["VAR_AND_BRK", "VALUE"]
     ]
     df_country_YY.columns = ["VAR_AND_BRK", "VAL_VS"]
-    # df_country_YY = df_country_YY.set_index("VAR_AND_BRK")
     df_temp = pd.merge(df_ita_YY, df_country_YY)
     df_temp[delta_colname] = df_temp["VAL_IT"] - df_temp["VAL_VS"]
 
@@ -76,8 +72,6 @@ def app():
         index=0,
         format_func=lambda id: EU_COUNTRIES[id],
     )
-    # if country == "EU":
-    #     country = "EU27_2020"
 
     year_b = st.sidebar.selectbox("Which year?", [2019, 2020, 2021], index=0)
 
@@ -121,11 +115,6 @@ def app():
     df_deltas = df_deltas[
         df_deltas["VARIABLE_CAPTION"].str.lower().str.contains(filter_var_d)
     ]
-
-    # -> i breakdown sono troppi, diventa poco usabile in questo modo
-    # ALL_BRKS = np.sort(df_deltas["BREAKDOWN_TYPE"].unique())
-    # selected_breakdowns = st.sidebar.multiselect('Selected breakdowns:',ALL_BRKS,ALL_BRKS)
-    # df_deltas = df_deltas[df_deltas["BREAKDOWN_TYPE"].isin(selected_breakdowns)]
 
     # Filtri sui breakdown
     filter_brk = st.sidebar.text_input("Filter breakdowns names").lower()

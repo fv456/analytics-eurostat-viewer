@@ -46,7 +46,6 @@ def app():
         ["VAR_AND_BRK", "VALUE"]
     ]
     df_country_YY.columns = ["VAR_AND_BRK", f"VAL_{country}"]
-    # df_country_YY = df_country_YY.set_index("VAR_AND_BRK")
     df_temp = pd.merge(df_ita_YY, df_country_YY)
     df_temp[COLNAME] = df_temp["VAL_IT"] - df_temp[f"VAL_{country}"]
     df_deltas = pd.merge(df_deltas, df_temp[["VAR_AND_BRK", COLNAME]])
@@ -83,11 +82,6 @@ def app():
     df_deltas = df_deltas[
         df_deltas["VARIABLE_CAPTION"].str.lower().str.contains(filter_var_d)
     ]
-
-    # -> i breakdown sono troppi, diventa poco usabile
-    # ALL_BRKS = np.sort(df_deltas["BREAKDOWN_TYPE"].unique())
-    # selected_breakdowns = st.sidebar.multiselect('Selected breakdowns:',ALL_BRKS,ALL_BRKS)
-    # df_deltas = df_deltas[df_deltas["BREAKDOWN_TYPE"].isin(selected_breakdowns)]
 
     filter_brk = st.sidebar.text_input("Filter breakdowns names").lower()
     df_deltas = df_deltas[
@@ -150,7 +144,6 @@ def app():
         hover_data=["VARIABLE_CAPTION", "BREAKDOWN_CAPTION"],
         color_continuous_scale="RdBu",
         height=700,
-        # title=f"Breakdown -> variable combinations: {n_comb} / {len(df_deltas)}",
         title=f"Breakdown -> variable combinations",
         range_color=[-v_max_range, v_max_range],
     )  # per ottenere range simmetrico (bianco sullo zero)
@@ -167,6 +160,5 @@ def app():
 # %% Exec with file
 if __name__ == "__main__":
     print("Eurostat data navigation app, executed as main")
-    # Streamlit config (must be first st command)
     st.set_page_config(layout="wide")
     app()

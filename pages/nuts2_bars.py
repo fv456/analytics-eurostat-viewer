@@ -22,7 +22,7 @@ def get_eurostat_data_2019():
     df["VAR_AND_BRK"] = df["VARIABLE"] + "-" + df["BREAKDOWN_TYPE"]
     df["CAPTION_ALL"] = df["VARIABLE_CAPTION"] + " - " + df["BREAKDOWN_CAPTION"]
 
-    # è l'unico anno tra i più recenti con un minimo di dati...
+    # è l'unico anno tra i più recenti che abbia sufficienti dati nel db corrente
     df = df[df["YEAR"] == 2019]
 
     df = df[df["UNIT"].isin(["PC_IND", "PC_HH"])]
@@ -39,14 +39,6 @@ def app():
     vars_and_captions = df_all[["VARIABLE", "VARIABLE_CAPTION"]].drop_duplicates()
     vars_and_captions = vars_and_captions.set_index("VARIABLE")  # .sort_index()
     vars_and_captions = vars_and_captions["VARIABLE_CAPTION"].to_dict()
-
-    # # Filtro di menu sugli anni
-    # year = st.sidebar.selectbox(
-    #     "Year?",
-    #     [2019, 2020, 2021],
-    #     index=0
-    # )
-    # df_all = df_all[df_all.YEAR == year]
 
     # Base per le variabili: tutte le disponibili nel dataset
     ALL_VARS = sorted(df_all["VARIABLE"].unique())
@@ -122,12 +114,7 @@ def app():
             st.subheader(f"Variable {vars_and_captions[var]} [{var}]")
             df_viz = df_all[(df_all.VARIABLE == var)]
 
-            fig = px.bar(
-                df_viz, x="BREAKDOWN_CAPTION", y="VALUE", color="AREA_TYPE"
-            )  # , barmode="group")
-            # fig.show()
-
-            # fig = create_boxplot(df_all, var)
+            fig = px.bar(df_viz, x="BREAKDOWN_CAPTION", y="VALUE", color="AREA_TYPE")
             fig = fig.update_xaxes(
                 categoryorder="array", categoryarray=SORTED_BRKS_CAPTIONS
             )
@@ -144,6 +131,6 @@ def app():
 
 # %% Exec with file
 if __name__ == "__main__":
-    print("Eurostat data navigation app, executed as main")
+    print("Eurostat ISOC-I NUTS2 data navigation app, executed as main")
     st.set_page_config(layout="wide")
     app()

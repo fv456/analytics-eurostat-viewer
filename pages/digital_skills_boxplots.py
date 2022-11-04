@@ -6,7 +6,6 @@ import streamlit as st
 
 import pandas as pd
 import pickle
-import plotly.express as px
 import plotly.graph_objects as go
 
 import dtd_streamlit_utils as utils
@@ -16,15 +15,10 @@ import dtd_streamlit_utils as utils
 
 def create_boxplot(df_all, variable_name: str) -> go.Figure:
 
-    # TEST: variable_name='I_IUIF'
-    df_box = df_all[(df_all.VARIABLE == variable_name)]  # & \
-    # (df_all.YEAR == 2021) ]
+    df_box = df_all[(df_all.VARIABLE == variable_name)]
 
     fig = go.Figure()
     fig.update_layout(showlegend=False)
-    # fig.update_yaxes(title="DESI indicator's value range")
-    # fig.update_xaxes(title='Indicators')
-    # fig = fig.update_xaxes(categoryorder='array')  # category ascending
     fig = fig.update_layout(height=600)
 
     # Ciclo su tutti i breakdown      # TEST: brk = 'Y16_24'
@@ -68,8 +62,6 @@ def create_boxplot(df_all, variable_name: str) -> go.Figure:
         except:
             print(f"Problem with breakdown {brk}. Skipping..")
 
-    # fig = fig.update_xaxes(categoryorder='category ascending')
-
     return fig
 
 
@@ -107,13 +99,6 @@ def app():
     )
     df_all = df_all[df_all.YEAR == year]
 
-    # # Filtro di menu sui Paesi
-    # countries = st.sidebar.multiselect(
-    #     "Select countries to compare",
-    #     COUNTRIES,
-    #     COUNTRIES,
-    #     format_func=lambda id: COUNTRIES[id]
-    # )
     countries = utils.get_eu_countries()
     df_all = df_all[df_all.GEO.isin(countries)]
 
@@ -132,19 +117,6 @@ def app():
     elif variables_type == "Calculated (set 2019 as year)":
         ALL_VARS = temp[temp.str.contains("_DSK")]
     del temp
-
-    # # Filtri sulle variabili
-    # selected_variables = st.sidebar.multiselect('Selected variables:',ALL_VARS,ALL_VARS)
-    # df_all = df_all[df_all["VARIABLE"].isin(selected_variables)]
-    # filter_var_d = st.sidebar.text_input("Filter variables descriptions").lower()
-    # df_all = df_all[df_all["VARIABLE_CAPTION"].str.lower().str.contains(filter_var_d)]
-
-    # Filtri sui breakdown
-
-    # filter_brk = st.sidebar.text_input("Filter breakdowns names").lower()
-    # df_all = df_all[df_all["BREAKDOWN_TYPE"].str.lower().str.contains(filter_brk)]
-    # filter_brk_d = st.sidebar.text_input("Filter breakdowns descriptions").lower()
-    # df_all = df_all[df_all["BREAKDOWN_CAPTION"].str.lower().str.contains(filter_brk_d)]
 
     st.sidebar.write("Breakdown types")
 
