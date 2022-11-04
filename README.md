@@ -5,8 +5,10 @@ TODO: spiegare preprocessing del dato
 
 TODO: aggiungere preprocessing?
 
-
-
+# Data source
+Data comes from:
+    - [Structural Businness Statistics](https://ec.europa.eu/eurostat/web/structural-business-statistics/data/database)
+    - [Digital Economic and Society - Comprehensive database](https://ec.europa.eu/eurostat/web/digital-economy-and-society/data/comprehensive-database)
 
 Copyright (c) the respective contributors, as shown by the AUTHORS file.
 

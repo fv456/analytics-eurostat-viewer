@@ -4,20 +4,13 @@
 """
 import logging
 import streamlit as st
-import numpy as np
 import pandas as pd
 import plotly.express as px
-
 import dtd_streamlit_utils as utils
-
-# %% Streamlit app
 
 
 @st.cache
-def get_countries_delta_data(
-    country_B: str, year: int, delta_colname: str
-):  # TODO: ristrutturare questa funzione
-    # Data comes from `dtd_analytics_desi/EuroStat/structural_business_statistics.ipynb`
+def get_countries_delta_data(country_B: str, year: int, delta_colname: str):
     sbs = (
         pd.read_csv("data/sbs_with_sizen.csv")
         .drop(columns=["INDIC_SB"])
@@ -25,7 +18,6 @@ def get_countries_delta_data(
     )
     sbs.YEAR += 2  # SBS is actually up to the 2019: we move year forward in order to match our data
 
-    # Data comes from `dtd_analytics_desi/EuroStat/enterprises-treemap.ipynb` (dataset `ENT2-2009-2021-v220315`)
     df = pd.read_pickle("data/ENT2-2009-2021-v220315-filtered+gdp.pickle").drop(
         columns=["NACE", "NACE_CAPTION", "GDP"]
     )
@@ -37,8 +29,6 @@ def get_countries_delta_data(
     ]
     df_ita_YY.columns = ["VAR_AND_BRK", "N_ENTERPRISE", "VAL_IT"]
 
-    # Utilizziamo come base per la differenza le combinazioni var/brk disponibili per
-    # l'Italia nell'anno selezionato
     df_deltas = df_ita_YY[["VAR_AND_BRK"]].copy(deep=True)
 
     df_country_YY = df.query(f"YEAR=={year} and GEO=='{country_B}'")[
@@ -55,7 +45,6 @@ def get_countries_delta_data(
     df_temp = df.query(f"YEAR=={year} and GEO=='IT'")[
         [
             "VAR_AND_BRK",
-            # "CAPTION_ALL",
             "VARIABLE_CAPTION",
             "BREAKDOWN_CAPTION",
             "VARIABLE",
@@ -72,14 +61,14 @@ def app():
     logging.info("Sidebar loading...")
     year = st.sidebar.selectbox("Year?", [2021, 2020], index=0)
 
-    EU_COUNTRIES = {"EU27_2020": "European Average",} | utils.get_eu_countries(
-        eu_union=True, eu_candidates=False, eu_other=False
-    )  # , drop_italy=True)
+    EU_COUNTRIES = {
+        "EU27_2020": "European Average",
+    } | utils.get_eu_countries(eu_union=True, eu_candidates=False, eu_other=False)
 
     country = st.sidebar.selectbox(
         "Compare Italy with..?",
-        EU_COUNTRIES,  # view.EU_27_AND_AVG # df.GEO.unique()[37]
-        index=0,  # 27,
+        EU_COUNTRIES,
+        index=0,
         format_func=lambda id: EU_COUNTRIES[id],
     )
 
@@ -99,7 +88,6 @@ def app():
     df_deltas = get_countries_delta_data(str(country), int(str(year)), COLNAME)
     logging.info("...data loaded.")
 
-    # Filtraggi sulle soglie dei valori di confronto
     v_max_range = max(abs(df_deltas[COLNAME]))
     v_max = max(df_deltas[COLNAME])
     v_min = min(df_deltas[COLNAME])
@@ -110,56 +98,21 @@ def app():
         f"{COLNAME} <= {threshold_max} and {COLNAME} >= {threshold_min}"
     )
 
-    # Base per le variabili: tutte le disponibili nel dataset
-    # ALL_VARS = np.sort(df_deltas["VARIABLE"].unique())
-
-    # Filtri su categorie di variabili
     st.sidebar.write("Variable categories")
     ALL_VARS = pd.Series(df_deltas["VARIABLE"].unique())
     SEL_VARS = []
-    # `list(set(...))` to avoid duplicates
     if st.sidebar.checkbox("Artificial Intelligence", True):
-        SEL_VARS = list(
-            set(
-                SEL_VARS
-                + list(ALL_VARS[ALL_VARS.str.upper().str.contains("AI")].values)
-            )
-        )
+        SEL_VARS = select_and_append_vars(ALL_VARS, SEL_VARS, "AI")
     if st.sidebar.checkbox("Big Data", True):
-        SEL_VARS = list(
-            set(
-                SEL_VARS
-                + list(ALL_VARS[ALL_VARS.str.upper().str.contains("BD")].values)
-            )
-        )
+        SEL_VARS = select_and_append_vars(ALL_VARS, SEL_VARS, "BD")
     if st.sidebar.checkbox("Cloud Computing", True):
-        SEL_VARS = list(
-            set(
-                SEL_VARS
-                + list(ALL_VARS[ALL_VARS.str.upper().str.contains("CC")].values)
-            )
-        )
+        SEL_VARS = select_and_append_vars(ALL_VARS, SEL_VARS, "CC")
     if st.sidebar.checkbox("Cyber Security", True):
-        SEL_VARS = list(
-            set(
-                SEL_VARS
-                + list(ALL_VARS[ALL_VARS.str.upper().str.contains("SEC")].values)
-            )
-        )
+        SEL_VARS = select_and_append_vars(ALL_VARS, SEL_VARS, "SEC")
     if st.sidebar.checkbox("Enterprise Website", True):
-        SEL_VARS = list(
-            set(
-                SEL_VARS
-                + list(ALL_VARS[ALL_VARS.str.upper().str.contains("WEB")].values)
-            )
-        )
+        SEL_VARS = select_and_append_vars(ALL_VARS, SEL_VARS, "WEB")
     if st.sidebar.checkbox("Internet of Things", True):
-        SEL_VARS = list(
-            set(
-                SEL_VARS
-                + list(ALL_VARS[ALL_VARS.str.upper().str.contains("IOT")].values)
-            )
-        )
+        SEL_VARS = select_and_append_vars(ALL_VARS, SEL_VARS, "IOT")
     if st.sidebar.checkbox("All others (longer loading time)", False):
         SEL_VARS = list(set(SEL_VARS + list(ALL_VARS[~ALL_VARS.isin(SEL_VARS)].values)))
 
@@ -172,9 +125,6 @@ def app():
 
     df_deltas = df_deltas[df_deltas["VARIABLE"].isin(SEL_VARS)]
 
-    # Filtri sulle variabili
-    # selected_variables = st.sidebar.multiselect('Selected variables:',ALL_VARS,ALL_VARS)
-    # df_deltas = df_deltas[df_deltas["VARIABLE"].isin(selected_variables)]
     selected_variables = st.sidebar.text_input("Filter variable names").lower()
     df_deltas = df_deltas[
         df_deltas["VARIABLE"].str.lower().str.contains(selected_variables)
@@ -184,12 +134,6 @@ def app():
         df_deltas["VARIABLE_CAPTION"].str.lower().str.contains(filter_var_d)
     ]
 
-    # -> i breakdown sono troppi, diventa poco usabile in questo modo
-    # ALL_BRKS = np.sort(df_deltas["BREAKDOWN_TYPE"].unique())
-    # selected_breakdowns = st.sidebar.multiselect('Selected breakdowns:',ALL_BRKS,ALL_BRKS)
-    # df_deltas = df_deltas[df_deltas["BREAKDOWN_TYPE"].isin(selected_breakdowns)]
-
-    # Filtri sui breakdown
     filter_brk = st.sidebar.text_input("Filter breakdowns names").lower()
     df_deltas = df_deltas[
         df_deltas["BREAKDOWN_TYPE"].str.lower().str.contains(filter_brk)
@@ -200,7 +144,6 @@ def app():
     ]
 
     logging.info("...sidebar loaded.")
-    # --------------------------------------------------------------------------------
 
     # ---- MAIN PAGE START
     logging.info("Main page loading...")
@@ -232,8 +175,8 @@ def app():
             color_continuous_scale="RdBu",
             height=750,
             title=f"Variable -> breakdown combinations",
-            range_color=[-v_max_range, v_max_range],
-        )  # per ottenere range simmetrico (bianco sullo zero)
+            range_color=[-v_max_range, v_max_range],  # In order to map zero -> white
+        )
         st.plotly_chart(fig, use_container_width=True)
 
         dwnld_button = st.empty()
@@ -258,8 +201,8 @@ def app():
             color_continuous_scale="RdBu",
             height=750,
             title=f"Breakdown -> variable combinations",
-            range_color=[-v_max_range, v_max_range],
-        )  # per ottenere range simmetrico (bianco sullo zero)
+            range_color=[-v_max_range, v_max_range],  # In order to map zero -> white
+        )
         st.plotly_chart(fig, use_container_width=True)
 
         dwnld_button = st.empty()
@@ -272,6 +215,16 @@ def app():
     logging.info("...treemap computed.")
 
     logging.info("...main page loaded.")
+
+
+def select_and_append_vars(ALL_VARS, SEL_VARS, matching: str):
+    # `list(set(...))` in order to avoid duplicates
+    return list(
+        set(
+            SEL_VARS
+            + list(ALL_VARS[ALL_VARS.str.upper().str.contains(matching)].values)
+        )
+    )
 
 
 # %% Exec with file
