@@ -210,6 +210,9 @@ def app():
         "Source data link: https://ec.europa.eu/eurostat/web/digital-economy-and-society/data/comprehensive-database"
     )
     st.write("Statistics on Enterprises, db version 15 March 2022")
+    st.write(
+        "Web app source code link: https://github.com/teamdigitale/eurostat-isoc-dashboard/pages/ict_in_enterprises.py"
+    )
 
     if len(df_deltas) == 0:
         st.markdown("WARNING: filter resulted in **NO DATA**.")

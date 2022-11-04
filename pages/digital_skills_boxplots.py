@@ -255,6 +255,9 @@ def app():
         "Source data link: https://ec.europa.eu/eurostat/web/digital-economy-and-society/data/comprehensive-database"
     )
     st.write("Statistics on Households/Individuals, db version 25 March 2022")
+    st.write(
+        "Web app source code link: https://github.com/teamdigitale/eurostat-isoc-dashboard/pages/digital_skills_boxplots.py"
+    )
 
     with st.expander("Selected variables with descriptions", False):
         st.table(

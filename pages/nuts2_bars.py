@@ -97,12 +97,15 @@ def app():
     SORTED_BRKS_CAPTIONS = temp.loc[SORTED_BRKS]["BREAKDOWN_CAPTION"]
 
     # ---- MAIN PAGE START
-    st.title("Eurostat ISOC variables with NUTS2 breakdown (year 2019)")
+    st.title("Eurostat ISOC-I variables with NUTS2 breakdown (year 2019)")
     st.header("Italian regions comparison tool")
     st.write(
         "Source data link: https://ec.europa.eu/eurostat/web/digital-economy-and-society/data/comprehensive-database"
     )
     st.write("Statistics on Households/Individuals, db version 25 March 2022")
+    st.write(
+        "Web app source code link: https://github.com/teamdigitale/eurostat-isoc-dashboard/pages/nuts2_bars.py"
+    )
 
     # --------------------------------------------------------------------------------
 
