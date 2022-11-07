@@ -1,6 +1,6 @@
 # Eurostat Digital economy and society Dashboard
 
-Cruscotto di analytics per la visualizzazione di una selezione di informazioni presenti nei dataset Eurostat scaricabili a [questo link](https://ec.europa.eu/eurostat/web/digital-economy-and-society/data/comprehensive-database).
+Prototipo di cruscotto di analytics per la visualizzazione di una selezione di informazioni presenti nei dataset Eurostat scaricabili a [questo link](https://ec.europa.eu/eurostat/web/digital-economy-and-society/data/comprehensive-database).
 
 Pagine presenti nella web app:
 
@@ -20,8 +20,6 @@ Tutte le web app, per ragioni di performance, fanno uso di varie pre-elaborazion
 Lo script di preprocessing non è al momento incluso nel repository.
 
 
-## Da completare:
-- Aggiunta degli script di preprocessing che permettano di ottenere i dataset di cui fa uso la web app
 
 ## Sorgenti dato
 - [Structural Business Statistics](https://ec.europa.eu/eurostat/web/structural-business-statistics/data/database)
